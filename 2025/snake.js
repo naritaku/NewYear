@@ -3,7 +3,6 @@ let fruits = [];
 const segmentSize = 20; // セグメントのサイズ
 const numFruits = 5; // フルーツの数
 const gameDuration = 30 * 1000; // ゲーム時間（30秒）
-const baseSnakeSpeed = 5;
 const backgroundColor = '#1c1a1a'
 let startTime;
 let gameState = "start"; // ゲームの状態を管理（"start" または "playing"）
@@ -187,10 +186,12 @@ class Snake {
         this.angle = 0;
         this.limitAngle = 10 / 180 * PI; //10 [deg]
         this.numSegments = 10;
+        this.baseSpeed = 5;
+        this.rapidSpeed = this.baseSpeed * 1.25;
         this.color = color;
         this.strategy = strategy; // 作戦を保持
         this.score = 0; // フルーツを取得した数
-        this.headSpeed = baseSnakeSpeed; // ヘビの速度
+        this.speed = this.baseSpeed; // ヘビの速度
         this.isCoiled = false
         this.isSerpentined = false
     }
@@ -211,8 +212,8 @@ class Snake {
 
         // 新しい頭の位置を計算
         let newHead = head.copy();
-        newHead.x += cos(this.angle) * this.headSpeed;
-        newHead.y += sin(this.angle) * this.headSpeed;
+        newHead.x += cos(this.angle) * this.speed;
+        newHead.y += sin(this.angle) * this.speed;
 
         // キャンバス内に制限
         newHead.x = constrain(newHead.x, 0, width - segmentSize);
@@ -232,8 +233,8 @@ class Snake {
 
         // 蛇っぽいと加速
         if (this.isSerpentine() || this.isCoiling()) {
-            if (this.headSpeed <= baseSnakeSpeed) {
-                this.headSpeed = baseSnakeSpeed * 1.25
+            if (this.speed <= this.baseSpeed) {
+                this.speed = this.rapidSpeed
                 setTimeout(() => this.setDefaultSpeed(), 3000);
             }
         }
@@ -245,7 +246,7 @@ class Snake {
     }
 
     setDefaultSpeed() {
-        this.headSpeed = baseSnakeSpeed
+        this.headSpeed = this.baseSpeed
     }
     // ヘビを描画する
     draw() {
