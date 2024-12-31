@@ -224,9 +224,9 @@ class Snake {
         this.body.unshift(newHead);
 
         // フルーツを食べたか確認
-        for (let i = 0; i < fruits.length; i++) {
-            if (fruits[i].isEaten(newHead)) {
-                fruits[i].respawn();
+        for (let fruit of fruits) {
+            if (fruit.isEaten(newHead)) {
+                fruit.respawn();
                 this.numSegments++; // ヘビを成長させる
                 this.score++; // スコアを加算
             }
