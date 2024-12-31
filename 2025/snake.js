@@ -8,7 +8,7 @@ let startTime;
 let gameState = "start"; // ゲームの状態を管理（"start" または "playing"）
 
 const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
-const message = [
+const messages = [
     "いいとしになりますように",
     "あなたの願いが叶いますように",
     "幸運が続きますように",
@@ -20,6 +20,7 @@ const message = [
     "努力が実り大きな成果を得られますように",
     "素敵な瞬間をたくさん楽しめますように"
 ]
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
@@ -131,9 +132,9 @@ function displayResult() {
         luck = "大吉 !"
     }
 
-    fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.5);
-    fitText(20, `${random(message)}`, width * 0.5, height * 0.75);
 
+    fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.25);
+    fitText(20, `${random(messages)}`, width * 0.5, height * 0.5);
 }
 
 // 残り時間を表示
