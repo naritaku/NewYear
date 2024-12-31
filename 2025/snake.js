@@ -75,9 +75,11 @@ function draw() {
 function displayStartScreen() {
     fill(backgroundColor + 80);
     rect(0, height / 2 - 48, width, height / 4 + 84)
-    textSize(32);
+    textSize(128);
     fill(255);
     textAlign(CENTER, CENTER);
+    text("🎍", width / 2, height / 3);
+    textSize(32);
     text("明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
     textSize(18);
     text("巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
