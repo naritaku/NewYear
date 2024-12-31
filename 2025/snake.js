@@ -79,12 +79,22 @@ function displayStartScreen() {
     fill(255);
     textAlign(CENTER, CENTER);
     text("🎍", width / 2, height / 3);
-    textSize(32);
-    text("明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
-    textSize(18);
-    text("巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
+    fitText(32, "明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
+    fitText(18, "巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
     fill(255, 128 + 128 * sin(millis() / 500));
-    text("Tap to Start", width / 2, height * 0.75);
+    fitText(18, "Tap to Start", width / 2, height * 0.75);
+}
+
+// 画面幅に収まるように
+function fitText(maxTextSize, mes, x, y) {
+    //[TODO] 等幅フォントでないとダメ
+    const longestLine = mes.split('\n').reduce((longest, current) =>
+        current.length > longest.length ? current : longest, ""
+    );
+    do {
+        textSize(maxTextSize--);
+    } while (textWidth(longestLine) >= width && maxTextSize > 0);
+    text(mes, x, y);
 }
 
 function mousePressed() {
@@ -99,7 +109,6 @@ function mousePressed() {
 }
 
 function displayResult() {
-    textSize(32);
     fill(255);
     textAlign(CENTER, CENTER);
 
@@ -121,9 +130,8 @@ function displayResult() {
         luck = "大吉 !"
     }
 
-    text(`score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width / 2, height * 0.5);
-    textSize(20);
-    text(`${random(message)}`, width / 2, height * 0.75);
+    fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.5);
+    fitText(20, `${random(message)}`, width * 0.5, height * 0.75);
 
 }
 
