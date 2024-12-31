@@ -73,8 +73,10 @@ function draw() {
 }
 
 function displayStartScreen() {
-    fill(backgroundColor + 80);
+    // 文字部分の背景
+    fill(backgroundColor + '80'); // 透明度が 128/255
     rect(0, height / 2 - 48, width, height / 4 + 84)
+    //メッセージ
     textSize(128);
     fill(255);
     textAlign(CENTER, CENTER);
@@ -157,8 +159,10 @@ class Fruit {
         this.radius = segmentSize;
     }
     draw() {
+        // 果実部分
         fill(217, 51, 63);
         ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
+        // ヘタ部分
         stroke("#290d0b");
         strokeWeight(2);
         line(this.x, this.y - this.radius * 0.8, this.x + this.radius * 0.1, this.y - this.radius * 1.2)
@@ -270,50 +274,55 @@ class Snake {
         }
     }
 
+    // トグロを巻いているか
     isCoiling() {
+        // 判定できない長さなら即false
         if (this.body.length < 3) {
             return false;
         }
 
         let prevVec = p5.Vector.sub(this.body[1], this.body[0]).normalize();
+        // 正規化できない場合はそのままのベクトルが返ってくるので即false
         if (prevVec.mag() === 0) {
             return false
         }
         for (let i = 2; i < this.body.length; i++) {
-            // まだ方向を見ていない節の尻尾方向のベクトルを計算
+            // 直前の胴体との角度差を求める
             let currVec = p5.Vector.sub(this.body[i], this.body[i - 1]).normalize();
             if (currVec.mag() === 0) {
                 return false
             }
-            // 正規化済みベクトルの内積から節の角度差θを求める
-            const theta = acos(constrain(prevVec.dot(currVec), -1, 1)); // 安全な範囲に制限
-
-            // 角度が許容範囲を超える場合、トグロを巻いていないと判定
+            const theta = acos(constrain(prevVec.dot(currVec), -1, 1));
+            // 角度差が小さい場合、トグロを巻いていないと判定
             if (theta < 0.9 * this.limitAngle) {
                 return false;
             }
-
-            // 現在のベクトルを次のループの「前のベクトル」として設定
             prevVec = currVec;
         }
+        // 全ての角度が許容範囲内ならトグロを巻いている
         this.isCoiled = true
-        return true; // 全ての角度が許容範囲内ならトグロを巻いている
+        return true;
     }
 
-    // s字になっているか -> 外積を元に判定
+    // 蛇行しているか
     isSerpentine() {
+        // 判定できない長さなら即false
         if (this.body.length < 3) {
             return false;
         }
+        // 尻尾から頭にかけてのベクトル
         const v1 = p5.Vector.sub(this.body[0], this.body[this.body.length - 1])
+        // 外積の最大、最小値からv1ベクトルからの垂直な距離が最も離れた距離を探す
         let min = 0
         let max = 0
         for (let i = 1; i < this.body.length - 1; i++) {
+            // 各胴体から頭にかけてのベクトル
             const v2 = p5.Vector.sub(this.body[0], this.body[i])
             const cross = v1.x * v2.y - v1.y * v2.x;
             if (cross > max) { max = cross; }
             if (cross < min) { min = cross; }
         }
+        // 線分の両側に垂直方向に頭半分以上の距離が離れた胴体があればS時とする
         if (min / v1.mag() < -0.5 * this.bodySize && max / v1.mag() > 0.5 * this.bodySize) {
             this.isSerpentined = true
             return true
