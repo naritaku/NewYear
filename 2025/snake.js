@@ -194,7 +194,7 @@ class Snake {
     // ヘビを更新する
     update() {
         const head = this.body[0]
-        const target = this.strategy(head, fruits, playerSnake.body[0]); // 作戦に従って目標を取得
+        const target = this.strategy(head, fruits, playerSnake); // 作戦に従って目標を取得
         let targetAngle = atan2(target.y - head.y, target.x - head.x);
         let angleDiff = targetAngle - this.angle;
 
@@ -344,7 +344,11 @@ function closestFruitStrategy(head, fruits) {
 }
 
 // 作戦: プレイヤーが近いフルーツを避ける
-function avoidPlayerFruitStrategy(head, fruits, playerHead) {
+function avoidPlayerFruitStrategy(head, fruits, player) {
+    if (player.body === undefined || player.body[0] === undefined) {
+        return fruits[0];
+    }
+    const playerHead = player.body[0]
     let bestFruit = fruits[0];
     let maxDistDifference = -Infinity;
 
