@@ -345,7 +345,7 @@ function closestFruitStrategy(head, fruits) {
 
 // 作戦: プレイヤーが近いフルーツを避ける
 function avoidPlayerFruitStrategy(head, fruits, playerHead) {
-    let bestFruit = null;
+    let bestFruit = fruits[0];
     let maxDistDifference = -Infinity;
 
     for (let fruit of fruits) {
@@ -361,7 +361,7 @@ function avoidPlayerFruitStrategy(head, fruits, playerHead) {
         }
     }
 
-    return bestFruit || fruits[0]; // フルーツがない場合、適当なフルーツを返す
+    return bestFruit;
 }
 
 // 作戦: 2つのフルーツを取得する最小コスト経路
@@ -373,20 +373,18 @@ function shortestTwoFruitStrategy(head, fruits) {
     let bestPair = null;
     let minCost = Infinity;
 
-    for (let i = 0; i < fruits.length; i++) {
+    for (let i = 1; i < fruits.length; i++) {
         for (let j = 0; j < i; j++) {
-            if (i !== j) {
-                const pairDist = getDistance(fruits[i], fruits[j]);
-                const cost1 = getDistance(head, fruits[i]) + pairDist;
-                const cost2 = getDistance(head, fruits[j]) + pairDist;
-                if (cost1 < minCost) {
-                    minCost = cost1;
-                    bestPair = fruits[i];
-                }
-                if (cost2 < minCost) {
-                    minCost = cost2;
-                    bestPair = fruits[j];
-                }
+            const pairDist = getDistance(fruits[i], fruits[j]);
+            const cost1 = getDistance(head, fruits[i]) + pairDist;
+            const cost2 = getDistance(head, fruits[j]) + pairDist;
+            if (cost1 < minCost) {
+                minCost = cost1;
+                bestPair = fruits[i];
+            }
+            if (cost2 < minCost) {
+                minCost = cost2;
+                bestPair = fruits[j];
             }
         }
     }
