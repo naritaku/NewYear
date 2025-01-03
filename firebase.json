@@ -1,15 +1,32 @@
 {
   "hosting": {
-    "public": "2025",
+    "public": "public",
     "ignore": [
       "firebase.json",
+      "README.md",
       "**/.*",
       "**/node_modules/**"
     ],
     "rewrites": [
       {
+        "source": "/2020/:file*",
+        "destination": "/2020/:file*"
+      },
+      {
+        "source": "/2020/**",
+        "destination": "/2020/index.html"
+      },
+      {
+        "source": "/2025/:file*",
+        "destination": "/2025/:file*"
+      },
+      {
+        "source": "/2025/**",
+        "destination": "/2025/index.html"
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/2025/index.html"
       }
     ]
   }
