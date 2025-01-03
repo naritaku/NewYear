@@ -1,4 +1,5 @@
-let demoSnake, playerSnake, cpuSnake;
+let playerSnake, cpuSnake;
+let snakes = [];
 let fruits = [];
 const segmentSize = 20; // セグメントのサイズ
 const numFruits = 5; // フルーツの数
@@ -29,55 +30,49 @@ const messages = [
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
-    // フルーツを１つだけ出しておく
-    fruits.push(new Fruit());
-    demoSnake = new Snake(width / 4, height / 4, snakeBlue, closestFruitStrategy);
+    demoSetup();
+}
+
+function demoSetup() {
+    // デモ用にフルーツとヘビを１つずつ表示しておく
+    fruits = [new Fruit()]
+    snakes = [new Snake(width / 4, height / 4, snakeBlue, closestFruitStrategy)];
 }
 
 function gameSetup() {
     fruits = Array.from({ length: numFruits }, () => new Fruit());
+
     const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
     const randomStrategy = random(strategies);
-    // プレイヤーとCPUのヘビを初期化（作戦を注入）
     playerSnake = new Snake(width / 4, height / 2, snakeBlue, mouseStrategy);
     cpuSnake = new Snake((width * 3) / 4, height / 2, snakeYellow, randomStrategy);
-
+    snakes = [playerSnake, cpuSnake]
 }
 
 function draw() {
+    snakes.forEach(snake => snake.update());
     background(backgroundColor);
 
-    // フルーツを描画
-    for (let fruit of fruits) {
-        fruit.draw();
+    // フルーツとヘビを描画
+    fruits.forEach(fruit => fruit.draw());
+    snakes.forEach(snake => snake.draw());
+
+    // stateごとの文字情報などは後から表示
+    switch (gameState) {
+        case initialState:
+            displayStartScreen(); // スタート画面を表示
+            return;
+        case playState:
+            displayTimer(); // 残り時間を表示
+            return
+        case resultState:
+            background(backgroundColor);
+            displayResult();
+            return;
+        default:
+            return
     }
-
-    if (gameState === initialState) {
-        demoSnake.update();
-        demoSnake.draw();
-
-        displayStartScreen(); // スタート画面を表示
-        return;
-    }
-
-    if (gameState === resultState) {
-        background(backgroundColor);
-        noLoop(); // ゲームを終了
-        displayResult();
-        return;
-    }
-
-    // プレイヤーとCPUの動作
-    playerSnake.update();
-    cpuSnake.update();
-
-    playerSnake.draw();
-    cpuSnake.draw();
-
-    // 残り時間を表示
-    displayTimer();
 }
-
 
 function mousePressed() {
     if (gameState === initialState) {
@@ -145,7 +140,6 @@ function displayResult() {
     if (luckValue === "大吉") {
         luck = "大吉 !"
     }
-
 
     fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.25);
     fitText(20, `${random(messages)}`, width * 0.5, height * 0.5);
