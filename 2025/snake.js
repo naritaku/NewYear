@@ -9,6 +9,7 @@ const snakeYellow = '#ffd43b'
 
 const initialState = "start";
 const playState = "playing";
+const resultState = "finished";
 
 let startTime;
 let gameState = initialState;
@@ -37,7 +38,6 @@ function setup() {
     playerSnake = new Snake(width / 4, height / 2, snakeBlue, mouseStrategy);
     cpuSnake = new Snake((width * 3) / 4, height / 2, snakeYellow, randomStrategy);
 
-    startTime = millis(); // ゲーム開始時間を記録
 }
 
 function draw() {
@@ -56,9 +56,7 @@ function draw() {
         return;
     }
 
-    // ゲーム中の処理
-    const elapsedTime = millis() - startTime;
-    if (elapsedTime >= gameDuration) {
+    if (gameState === resultState) {
         background(backgroundColor);
         noLoop(); // ゲームを終了
         displayResult();
@@ -73,7 +71,7 @@ function draw() {
     cpuSnake.draw();
 
     // 残り時間を表示
-    displayTimer(gameDuration - elapsedTime);
+    displayTimer();
 }
 
 
@@ -84,7 +82,9 @@ function mousePressed() {
         }
         gameState = playState; // ゲーム状態を開始に変更
         startTime = millis(); // ゲーム開始時間を記録
-        loop(); // ゲームを開始
+        setTimeout(() => {
+            gameState = resultState;
+        }, gameDuration);
     }
 }
 
@@ -147,7 +147,9 @@ function displayResult() {
 }
 
 // 残り時間を表示
-function displayTimer(remainingTime) {
+function displayTimer() {
+    const elapsedTime = millis() - startTime;
+    const remainingTime = gameDuration - elapsedTime;
     textSize(16);
     fill(255);
     textAlign(LEFT, TOP);
