@@ -14,6 +14,7 @@ const resultState = "finished";
 
 let startTime;
 let gameState = initialState;
+let canTap = true;
 const messages = [
     "いいとしになりますように",
     "あなたの願いが叶いますように",
@@ -75,16 +76,26 @@ function draw() {
 }
 
 function mousePressed() {
+    if (!canTap) {
+        return
+    }
+
     if (gameState === initialState) {
-        for (let i = fruits.length; i < numFruits; i++) {
-            fruits.push(new Fruit());
-        }
         gameState = playState; // ゲーム状態を開始に変更
         startTime = millis(); // ゲーム開始時間を記録
         gameSetup();
         setTimeout(() => {
             gameState = resultState;
+            canTap = false;
+            setTimeout(() => { canTap = true; }, 500);
         }, gameDuration);
+    }
+    if (gameState === resultState) {
+        gameState = initialState;
+        demoSetup();
+        canTap = false
+        loop();
+        setTimeout(() => { canTap = true; }, 500);
     }
 }
 
@@ -143,6 +154,8 @@ function displayResult() {
 
     fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.25);
     fitText(20, `${random(messages)}`, width * 0.5, height * 0.5);
+    noLoop();
+    fitText(18, "トップへ戻る", width / 2, height * 0.75);
 }
 
 // 残り時間を表示
