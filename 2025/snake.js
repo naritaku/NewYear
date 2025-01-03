@@ -1,15 +1,21 @@
-let demoSnake, playerSnake, cpuSnake;
+let playerSnake, cpuSnake;
+let snakes = [];
 let fruits = [];
 const segmentSize = 20; // セグメントのサイズ
 const numFruits = 5; // フルーツの数
 const gameDuration = 30 * 1000; // ゲーム時間（30秒）
-const baseSnakeSpeed = 5;
 const backgroundColor = '#1c1a1a'
-let startTime;
-let gameState = "start"; // ゲームの状態を管理（"start" または "playing"）
+const snakeBlue = '#306998'
+const snakeYellow = '#ffd43b'
 
-const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
-const message = [
+const initialState = "start";
+const playState = "playing";
+const resultState = "finished";
+
+let startTime;
+let gameState = initialState;
+let canTap = true;
+const messages = [
     "いいとしになりますように",
     "あなたの願いが叶いますように",
     "幸運が続きますように",
@@ -21,85 +27,110 @@ const message = [
     "努力が実り大きな成果を得られますように",
     "素敵な瞬間をたくさん楽しめますように"
 ]
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
-    // フルーツを１つだけ出しておく
-    fruits.push(new Fruit());
-    demoSnake = new Snake(width / 4, height / 4, color(48, 105, 152), closestFruitStrategy);
+    demoSetup();
+}
 
-    // プレイヤーとCPUのヘビを初期化（作戦を注入）
-    playerSnake = new Snake(width / 4, height / 2, color(48, 105, 152), mouseStrategy);
-    const randomStrategy = random(strategies); // CPUのストラテジーをランダムで選択
-    cpuSnake = new Snake((width * 3) / 4, height / 2, color(255, 212, 59), randomStrategy);
+function demoSetup() {
+    // デモ用にフルーツとヘビを１つずつ表示しておく
+    fruits = [new Fruit()]
+    snakes = [new Snake(width / 4, height / 4, snakeBlue, closestFruitStrategy)];
+}
 
-    startTime = millis(); // ゲーム開始時間を記録
+function gameSetup() {
+    fruits = Array.from({ length: numFruits }, () => new Fruit());
+
+    const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
+    const randomStrategy = random(strategies);
+    playerSnake = new Snake(width / 4, height / 2, snakeBlue, mouseStrategy);
+    cpuSnake = new Snake((width * 3) / 4, height / 2, snakeYellow, randomStrategy);
+    snakes = [playerSnake, cpuSnake]
 }
 
 function draw() {
+    snakes.forEach(snake => snake.update());
     background(backgroundColor);
 
-    // フルーツを描画
-    for (let fruit of fruits) {
-        fruit.draw();
+    // フルーツとヘビを描画
+    fruits.forEach(fruit => fruit.draw());
+    snakes.forEach(snake => snake.draw());
+
+    // stateごとの文字情報などは後から表示
+    switch (gameState) {
+        case initialState:
+            displayStartScreen(); // スタート画面を表示
+            return;
+        case playState:
+            displayTimer(); // 残り時間を表示
+            return
+        case resultState:
+            background(backgroundColor);
+            displayResult();
+            return;
+        default:
+            return
+    }
+}
+
+function mousePressed() {
+    if (!canTap) {
+        return
     }
 
-    if (gameState === "start") {
-        demoSnake.update();
-        demoSnake.draw();
-
-        displayStartScreen(); // スタート画面を表示
-        return;
+    if (gameState === initialState) {
+        gameState = playState; // ゲーム状態を開始に変更
+        startTime = millis(); // ゲーム開始時間を記録
+        gameSetup();
+        setTimeout(() => {
+            gameState = resultState;
+            canTap = false;
+            setTimeout(() => { canTap = true; }, 500);
+        }, gameDuration);
     }
-
-    // ゲーム中の処理
-    const elapsedTime = millis() - startTime;
-    if (elapsedTime >= gameDuration) {
-        background(backgroundColor);
-        noLoop(); // ゲームを終了
-        displayResult();
-        return;
+    if (gameState === resultState) {
+        gameState = initialState;
+        demoSetup();
+        canTap = false
+        loop();
+        setTimeout(() => { canTap = true; }, 500);
     }
+}
 
-    // プレイヤーとCPUの動作
-    playerSnake.update();
-    cpuSnake.update();
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}
 
-    playerSnake.draw();
-    cpuSnake.draw();
-
-    // 残り時間を表示
-    displayTimer(gameDuration - elapsedTime);
+// 画面幅に収まるように
+function fitText(maxTextSize, mes, x, y) {
+    //[TODO] 等幅フォントでないとダメ
+    const longestLine = mes.split('\n').reduce((longest, current) =>
+        current.length > longest.length ? current : longest, ""
+    );
+    do {
+        textSize(maxTextSize--);
+    } while (textWidth(longestLine) >= width && maxTextSize > 0);
+    text(mes, x, y);
 }
 
 function displayStartScreen() {
-    fill(backgroundColor + 80);
+    // 文字部分の背景
+    fill(backgroundColor + '80'); // 透明度が 128/255
     rect(0, height / 2 - 48, width, height / 4 + 84)
+    //メッセージ
     textSize(128);
     fill(255);
     textAlign(CENTER, CENTER);
     text("🎍", width / 2, height / 3);
-    textSize(32);
-    text("明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
-    textSize(18);
-    text("巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
+    fitText(32, "明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
+    fitText(18, "巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
     fill(255, 128 + 128 * sin(millis() / 500));
-    text("Tap to Start", width / 2, height * 0.75);
-}
-
-function mousePressed() {
-    if (gameState === "start") {
-        for (let i = fruits.length; i < numFruits; i++) {
-            fruits.push(new Fruit());
-        }
-        gameState = "playing"; // ゲーム状態を開始に変更
-        startTime = millis(); // ゲーム開始時間を記録
-        loop(); // ゲームを開始
-    }
+    fitText(18, "Tap to Start", width / 2, height * 0.75);
 }
 
 function displayResult() {
-    textSize(32);
     fill(255);
     textAlign(CENTER, CENTER);
 
@@ -121,24 +152,22 @@ function displayResult() {
         luck = "大吉 !"
     }
 
-    text(`score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width / 2, height * 0.5);
-    textSize(20);
-    text(`${random(message)}`, width / 2, height * 0.75);
-
+    fitText(32, `score: ${playerSnake.score}\n🐍らしさ: ${snake}\n運勢: ${luck}`, width * 0.5, height * 0.25);
+    fitText(20, `${random(messages)}`, width * 0.5, height * 0.5);
+    noLoop();
+    fitText(18, "トップへ戻る", width / 2, height * 0.75);
 }
 
 // 残り時間を表示
-function displayTimer(remainingTime) {
+function displayTimer() {
+    const elapsedTime = millis() - startTime;
+    const remainingTime = gameDuration - elapsedTime;
     textSize(16);
     fill(255);
     textAlign(LEFT, TOP);
     text(`Time: ${(remainingTime / 1000).toFixed(1)}s`, 10, 10);
     text(`Player: ${playerSnake.score}`, 10, 30);
     text(`CPU: ${cpuSnake.score}`, 10, 50);
-}
-
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
 }
 
 class Fruit {
@@ -149,8 +178,10 @@ class Fruit {
         this.radius = segmentSize;
     }
     draw() {
+        // 果実部分
         fill(217, 51, 63);
         ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
+        // ヘタ部分
         stroke("#290d0b");
         strokeWeight(2);
         line(this.x, this.y - this.radius * 0.8, this.x + this.radius * 0.1, this.y - this.radius * 1.2)
@@ -175,10 +206,12 @@ class Snake {
         this.angle = 0;
         this.limitAngle = 10 / 180 * PI; //10 [deg]
         this.numSegments = 10;
+        this.baseSpeed = 5;
+        this.rapidSpeed = this.baseSpeed * 1.25;
         this.color = color;
         this.strategy = strategy; // 作戦を保持
         this.score = 0; // フルーツを取得した数
-        this.headSpeed = baseSnakeSpeed; // ヘビの速度
+        this.speed = this.baseSpeed; // ヘビの速度
         this.isCoiled = false
         this.isSerpentined = false
     }
@@ -186,7 +219,7 @@ class Snake {
     // ヘビを更新する
     update() {
         const head = this.body[0]
-        const target = this.strategy(head, fruits, playerSnake.body[0]); // 作戦に従って目標を取得
+        const target = this.strategy(head, fruits, playerSnake); // 作戦に従って目標を取得
         let targetAngle = atan2(target.y - head.y, target.x - head.x);
         let angleDiff = targetAngle - this.angle;
 
@@ -199,8 +232,8 @@ class Snake {
 
         // 新しい頭の位置を計算
         let newHead = head.copy();
-        newHead.x += cos(this.angle) * this.headSpeed;
-        newHead.y += sin(this.angle) * this.headSpeed;
+        newHead.x += cos(this.angle) * this.speed;
+        newHead.y += sin(this.angle) * this.speed;
 
         // キャンバス内に制限
         newHead.x = constrain(newHead.x, 0, width - segmentSize);
@@ -210,9 +243,9 @@ class Snake {
         this.body.unshift(newHead);
 
         // フルーツを食べたか確認
-        for (let i = 0; i < fruits.length; i++) {
-            if (fruits[i].isEaten(newHead)) {
-                fruits[i].respawn();
+        for (let fruit of fruits) {
+            if (fruit.isEaten(newHead)) {
+                fruit.respawn();
                 this.numSegments++; // ヘビを成長させる
                 this.score++; // スコアを加算
             }
@@ -220,8 +253,8 @@ class Snake {
 
         // 蛇っぽいと加速
         if (this.isSerpentine() || this.isCoiling()) {
-            if (this.headSpeed <= baseSnakeSpeed) {
-                this.headSpeed = baseSnakeSpeed * 1.25
+            if (this.speed <= this.baseSpeed) {
+                this.speed = this.rapidSpeed
                 setTimeout(() => this.setDefaultSpeed(), 3000);
             }
         }
@@ -233,7 +266,7 @@ class Snake {
     }
 
     setDefaultSpeed() {
-        this.headSpeed = baseSnakeSpeed
+        this.headSpeed = this.baseSpeed
     }
     // ヘビを描画する
     draw() {
@@ -248,7 +281,7 @@ class Snake {
             noStroke();
         }
         if (this.isCoiling()) {
-            stroke("#FFFFFF7F");
+            stroke("#FFFFFF");
             strokeWeight(segmentSize * 1.5)
             for (let i = 1; i < this.body.length; i++) {
                 line(this.body[i - 1].x, this.body[i - 1].y, this.body[i].x, this.body[i].y)
@@ -262,50 +295,55 @@ class Snake {
         }
     }
 
+    // トグロを巻いているか
     isCoiling() {
+        // 判定できない長さなら即false
         if (this.body.length < 3) {
             return false;
         }
 
         let prevVec = p5.Vector.sub(this.body[1], this.body[0]).normalize();
+        // 正規化できない場合はそのままのベクトルが返ってくるので即false
         if (prevVec.mag() === 0) {
             return false
         }
         for (let i = 2; i < this.body.length; i++) {
-            // まだ方向を見ていない節の尻尾方向のベクトルを計算
+            // 直前の胴体との角度差を求める
             let currVec = p5.Vector.sub(this.body[i], this.body[i - 1]).normalize();
             if (currVec.mag() === 0) {
                 return false
             }
-            // 正規化済みベクトルの内積から節の角度差θを求める
-            const theta = acos(constrain(prevVec.dot(currVec), -1, 1)); // 安全な範囲に制限
-
-            // 角度が許容範囲を超える場合、トグロを巻いていないと判定
+            const theta = acos(constrain(prevVec.dot(currVec), -1, 1));
+            // 角度差が小さい場合、トグロを巻いていないと判定
             if (theta < 0.9 * this.limitAngle) {
                 return false;
             }
-
-            // 現在のベクトルを次のループの「前のベクトル」として設定
             prevVec = currVec;
         }
+        // 全ての角度が許容範囲内ならトグロを巻いている
         this.isCoiled = true
-        return true; // 全ての角度が許容範囲内ならトグロを巻いている
+        return true;
     }
 
-    // s字になっているか -> 外積を元に判定
+    // 蛇行しているか
     isSerpentine() {
+        // 判定できない長さなら即false
         if (this.body.length < 3) {
             return false;
         }
+        // 尻尾から頭にかけてのベクトル
         const v1 = p5.Vector.sub(this.body[0], this.body[this.body.length - 1])
+        // 外積の最大、最小値からv1ベクトルからの垂直な距離が最も離れた距離を探す
         let min = 0
         let max = 0
         for (let i = 1; i < this.body.length - 1; i++) {
+            // 各胴体から頭にかけてのベクトル
             const v2 = p5.Vector.sub(this.body[0], this.body[i])
             const cross = v1.x * v2.y - v1.y * v2.x;
             if (cross > max) { max = cross; }
             if (cross < min) { min = cross; }
         }
+        // 線分の両側に垂直方向に頭半分以上の距離が離れた胴体があればS時とする
         if (min / v1.mag() < -0.5 * this.bodySize && max / v1.mag() > 0.5 * this.bodySize) {
             this.isSerpentined = true
             return true
@@ -336,8 +374,12 @@ function closestFruitStrategy(head, fruits) {
 }
 
 // 作戦: プレイヤーが近いフルーツを避ける
-function avoidPlayerFruitStrategy(head, fruits, playerHead) {
-    let bestFruit = null;
+function avoidPlayerFruitStrategy(head, fruits, player) {
+    if (player.body === undefined || player.body[0] === undefined) {
+        return fruits[0];
+    }
+    const playerHead = player.body[0]
+    let bestFruit = fruits[0];
     let maxDistDifference = -Infinity;
 
     for (let fruit of fruits) {
@@ -353,7 +395,7 @@ function avoidPlayerFruitStrategy(head, fruits, playerHead) {
         }
     }
 
-    return bestFruit || fruits[0]; // フルーツがない場合、適当なフルーツを返す
+    return bestFruit;
 }
 
 // 作戦: 2つのフルーツを取得する最小コスト経路
@@ -365,20 +407,18 @@ function shortestTwoFruitStrategy(head, fruits) {
     let bestPair = null;
     let minCost = Infinity;
 
-    for (let i = 0; i < fruits.length; i++) {
+    for (let i = 1; i < fruits.length; i++) {
         for (let j = 0; j < i; j++) {
-            if (i !== j) {
-                const pairDist = getDistance(fruits[i], fruits[j]);
-                const cost1 = getDistance(head, fruits[i]) + pairDist;
-                const cost2 = getDistance(head, fruits[j]) + pairDist;
-                if (cost1 < minCost) {
-                    minCost = cost1;
-                    bestPair = fruits[i];
-                }
-                if (cost2 < minCost) {
-                    minCost = cost2;
-                    bestPair = fruits[j];
-                }
+            const pairDist = getDistance(fruits[i], fruits[j]);
+            const cost1 = getDistance(head, fruits[i]) + pairDist;
+            const cost2 = getDistance(head, fruits[j]) + pairDist;
+            if (cost1 < minCost) {
+                minCost = cost1;
+                bestPair = fruits[i];
+            }
+            if (cost2 < minCost) {
+                minCost = cost2;
+                bestPair = fruits[j];
             }
         }
     }
