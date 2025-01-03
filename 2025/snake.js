@@ -32,6 +32,10 @@ function setup() {
     // フルーツを１つだけ出しておく
     fruits.push(new Fruit());
     demoSnake = new Snake(width / 4, height / 4, snakeBlue, closestFruitStrategy);
+}
+
+function gameSetup() {
+    fruits = Array.from({ length: numFruits }, () => new Fruit());
     const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
     const randomStrategy = random(strategies);
     // プレイヤーとCPUのヘビを初期化（作戦を注入）
@@ -82,6 +86,7 @@ function mousePressed() {
         }
         gameState = playState; // ゲーム状態を開始に変更
         startTime = millis(); // ゲーム開始時間を記録
+        gameSetup();
         setTimeout(() => {
             gameState = resultState;
         }, gameDuration);
