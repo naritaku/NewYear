@@ -72,19 +72,20 @@ function draw() {
     displayTimer(gameDuration - elapsedTime);
 }
 
-function displayStartScreen() {
-    // 文字部分の背景
-    fill(backgroundColor + '80'); // 透明度が 128/255
-    rect(0, height / 2 - 48, width, height / 4 + 84)
-    //メッセージ
-    textSize(128);
-    fill(255);
-    textAlign(CENTER, CENTER);
-    text("🎍", width / 2, height / 3);
-    fitText(32, "明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
-    fitText(18, "巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
-    fill(255, 128 + 128 * sin(millis() / 500));
-    fitText(18, "Tap to Start", width / 2, height * 0.75);
+
+function mousePressed() {
+    if (gameState === "start") {
+        for (let i = fruits.length; i < numFruits; i++) {
+            fruits.push(new Fruit());
+        }
+        gameState = "playing"; // ゲーム状態を開始に変更
+        startTime = millis(); // ゲーム開始時間を記録
+        loop(); // ゲームを開始
+    }
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
 }
 
 // 画面幅に収まるように
@@ -99,15 +100,19 @@ function fitText(maxTextSize, mes, x, y) {
     text(mes, x, y);
 }
 
-function mousePressed() {
-    if (gameState === "start") {
-        for (let i = fruits.length; i < numFruits; i++) {
-            fruits.push(new Fruit());
-        }
-        gameState = "playing"; // ゲーム状態を開始に変更
-        startTime = millis(); // ゲーム開始時間を記録
-        loop(); // ゲームを開始
-    }
+function displayStartScreen() {
+    // 文字部分の背景
+    fill(backgroundColor + '80'); // 透明度が 128/255
+    rect(0, height / 2 - 48, width, height / 4 + 84)
+    //メッセージ
+    textSize(128);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text("🎍", width / 2, height / 3);
+    fitText(32, "明けましておめでとうございます\n今年もよろしくお願いします", width / 2, height / 2);
+    fitText(18, "巳年なのでヘビゲームを作ってみました。\n青いヘビはタップした場所を目指します。りんごを集めてください。\n1回30秒で最後におみくじが出ます。\nもしよろしければお試しください。", width / 2, height * 0.625);
+    fill(255, 128 + 128 * sin(millis() / 500));
+    fitText(18, "Tap to Start", width / 2, height * 0.75);
 }
 
 function displayResult() {
@@ -145,10 +150,6 @@ function displayTimer(remainingTime) {
     text(`Time: ${(remainingTime / 1000).toFixed(1)}s`, 10, 10);
     text(`Player: ${playerSnake.score}`, 10, 30);
     text(`CPU: ${cpuSnake.score}`, 10, 50);
-}
-
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
 }
 
 class Fruit {
