@@ -262,7 +262,7 @@ class Snake {
             noStroke();
         }
         if (this.isCoiling()) {
-            stroke("#FFFFFF7F");
+            stroke("#FFFFFF");
             strokeWeight(segmentSize * 1.5)
             for (let i = 1; i < this.body.length; i++) {
                 line(this.body[i - 1].x, this.body[i - 1].y, this.body[i].x, this.body[i].y)
