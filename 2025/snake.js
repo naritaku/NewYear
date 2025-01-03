@@ -4,10 +4,14 @@ const segmentSize = 20; // セグメントのサイズ
 const numFruits = 5; // フルーツの数
 const gameDuration = 30 * 1000; // ゲーム時間（30秒）
 const backgroundColor = '#1c1a1a'
-let startTime;
-let gameState = "start"; // ゲームの状態を管理（"start" または "playing"）
+const snakeBlue = '#306998'
+const snakeYellow = '#ffd43b'
 
-const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
+const initialState = "start";
+const playState = "playing";
+
+let startTime;
+let gameState = initialState;
 const messages = [
     "いいとしになりますように",
     "あなたの願いが叶いますように",
@@ -26,12 +30,12 @@ function setup() {
 
     // フルーツを１つだけ出しておく
     fruits.push(new Fruit());
-    demoSnake = new Snake(width / 4, height / 4, color(48, 105, 152), closestFruitStrategy);
-
+    demoSnake = new Snake(width / 4, height / 4, snakeBlue, closestFruitStrategy);
+    const strategies = [closestFruitStrategy, avoidPlayerFruitStrategy, shortestTwoFruitStrategy]; // 利用可能なストラテジー
+    const randomStrategy = random(strategies);
     // プレイヤーとCPUのヘビを初期化（作戦を注入）
-    playerSnake = new Snake(width / 4, height / 2, color(48, 105, 152), mouseStrategy);
-    const randomStrategy = random(strategies); // CPUのストラテジーをランダムで選択
-    cpuSnake = new Snake((width * 3) / 4, height / 2, color(255, 212, 59), randomStrategy);
+    playerSnake = new Snake(width / 4, height / 2, snakeBlue, mouseStrategy);
+    cpuSnake = new Snake((width * 3) / 4, height / 2, snakeYellow, randomStrategy);
 
     startTime = millis(); // ゲーム開始時間を記録
 }
@@ -44,7 +48,7 @@ function draw() {
         fruit.draw();
     }
 
-    if (gameState === "start") {
+    if (gameState === initialState) {
         demoSnake.update();
         demoSnake.draw();
 
@@ -74,11 +78,11 @@ function draw() {
 
 
 function mousePressed() {
-    if (gameState === "start") {
+    if (gameState === initialState) {
         for (let i = fruits.length; i < numFruits; i++) {
             fruits.push(new Fruit());
         }
-        gameState = "playing"; // ゲーム状態を開始に変更
+        gameState = playState; // ゲーム状態を開始に変更
         startTime = millis(); // ゲーム開始時間を記録
         loop(); // ゲームを開始
     }
