@@ -9,6 +9,10 @@
     ],
     "rewrites": [
       {
+        "source": "/google4680b647fb998dae.html",
+        "destination": "/google4680b647fb998dae.html"
+      },
+      {
         "source": "/2020/:file*",
         "destination": "/2020/:file*"
       },
